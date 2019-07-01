@@ -1,37 +1,78 @@
 \NeedsTeXFormat{LaTeX2e}
 
+%% declare nonatbib option, which does not load natbib in case of
+%% package clash (users can pass options to natbib via
+%% \PassOptionsToPackage)
+%\newif\if@natbib\@natbibtrue
+%\DeclareOption{nonatbib}{
+%  \@natbibfalse
+%}
+
 \ProcessOptions\relax
 
-% fonts
+% Use roman fonts for equations if available
+\IfFileExists{txfonts.sty}%
+  {\AtEndOfClass{\RequirePackage{txfonts}%
+  \gdef\ttdefault{cmtt}%
+   \let\iint\relax
+  \let\iiint\relax
+  \let\iiiint\relax
+  \let\idotsint\relax
+  \let\openbox\relax}}{\RequirePackage{times}}
+  
+ % other font configurations
 \renewcommand{\rmdefault}{ptm}
 \renewcommand{\sfdefault}{phv}
 
-% set page geometry
-\usepackage[verbose=true,letterpaper]{geometry}
+%% Load natbib unless told otherwise
+%\if@natbib
+%  \RequirePackage{natbib}
+%\fi
+
+% Define page geometry
+\RequirePackage[verbose=true,letterpaper]{geometry}
 \AtBeginDocument{
   \newgeometry{
-    textheight=9in,
-    textwidth=6.5in,
-    top=1in,
-    headheight=14pt,
-    headsep=25pt,
-    footskip=30pt
+    textheight=9.3in,
+    textwidth=7.1in,
+    top=0.96in,
+    headheight=0.15in,
+    headsep=0.14in,
+    footskip=0in
   }
 }
+
+% Add background margin tick marks
+\RequirePackage{background}
+\SetBgScale{1}
+\SetBgAngle{0}
+\SetBgColor{black}
+\SetBgContents{%
+\begin{tikzpicture}[remember picture,overlay]
+\node at (-3.55in,5.2in) {\rule{.4pt}{.4in}};
+\node at (3.55in,5.2in) {\rule{.4pt}{.4in}};
+\node at (-3.95in,4.8in) {\rule{.4in}{.4pt}};
+\node at (3.95in,4.8in) {\rule{.4in}{.4pt}};
+\node at (-3.55in,-5.2in) {\rule{.4pt}{.4in}};
+\node at (3.55in,-5.2in) {\rule{.4pt}{.4in}};
+\node at (-3.95in,-4.8in) {\rule{.4in}{.4pt}};
+\node at (3.95in,-4.8in) {\rule{.4in}{.4pt}};
+\end{tikzpicture}}
 
 \widowpenalty=10000
 \clubpenalty=10000
 \flushbottom
 \sloppy
 
-\usepackage{fancyhdr}
+% Header options
+\RequirePackage{fancyhdr}
 \fancyhf{}
 \pagestyle{fancy}
 \renewcommand{\headrulewidth}{0pt}
 \fancyheadoffset{0pt}
-\rhead{\scshape A preprint - \today}
-\cfoot{\thepage}
-
+\lhead{\scshape Preprint -- \@title}
+\rhead{\thepage}
+%\rfoot{\thepage}
 
 %Handling Keywords
 \def\keywordname{{\bfseries \emph Keywords}}%
@@ -70,21 +111,21 @@
   \@startsection{section}{1}{\z@}%
                 {-2.0ex \@plus -0.5ex \@minus -0.2ex}%
                 { 1.5ex \@plus  0.3ex \@minus  0.2ex}%
-                {\large\bf\raggedright}%
+                {\large\scshape\raggedright}%
 }
 \providecommand{\subsection}{}
 \renewcommand{\subsection}{%
   \@startsection{subsection}{2}{\z@}%
                 {-1.8ex \@plus -0.5ex \@minus -0.2ex}%
                 { 0.8ex \@plus  0.2ex}%
-                {\normalsize\bf\raggedright}%
+                {\normalsize\itshape\raggedright}%
 }
 \providecommand{\subsubsection}{}
 \renewcommand{\subsubsection}{%
   \@startsection{subsubsection}{3}{\z@}%
                 {-1.5ex \@plus -0.5ex \@minus -0.2ex}%
                 { 0.5ex \@plus  0.2ex}%
-                {\normalsize\bf\raggedright}%
+                {\normalsize\itshape\raggedright}%
 }
 \providecommand{\paragraph}{}
 \renewcommand{\paragraph}{%
@@ -184,6 +225,7 @@
       \hbox to 1.8em{\hss $\m@th ^{\@thefnmark}$}##1
     }
     \thispagestyle{empty}
+    \vspace*{-0.5cm}
     \@maketitle
     \@thanks
     %\@notice
@@ -192,32 +234,16 @@
   \let\thanks\relax
 }
 
-% rules for title box at top of first page
-\newcommand{\@toptitlebar}{
-  \hrule height 2\p@
-  \vskip 0.25in
-  \vskip -\parskip%
-}
-\newcommand{\@bottomtitlebar}{
-  \vskip 0.29in
-  \vskip -\parskip
-  \hrule height 2\p@
-  \vskip 0.09in%
-}
-
 % create title (includes both anonymized and non-anonymized versions)
 \providecommand{\@maketitle}{}
 \renewcommand{\@maketitle}{%
   \vbox{%
     \hsize\textwidth
     \linewidth\hsize
-    \vskip 0.1in
-    \@toptitlebar
     \centering
     {\LARGE\sc \@title\par}
-    \@bottomtitlebar
-    \textsc{A Preprint}\\
     \vskip 0.1in
+    \textsc{Preprint, compiled \today}\\
     \def\And{%
       \end{tabular}\hfil\linebreak[0]\hfil%
       \begin{tabular}[t]{c}\bf\rule{\z@}{24\p@}\ignorespaces%
@@ -227,7 +253,7 @@
       \begin{tabular}[t]{c}\bf\rule{\z@}{24\p@}\ignorespaces%
     }
     \begin{tabular}[t]{c}\bf\rule{\z@}{24\p@}\@author\end{tabular}%
-  \vskip 0.4in \@minus 0.1in \center{\today}   \vskip 0.2in
+  \vskip 0.2in
   }
 }
 
